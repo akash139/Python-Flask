@@ -27,22 +27,32 @@ employee = [{'Name': 'Akash',
              }
             ]
 
-## Home Page
+# Home Page
 @app.route('/')
 def home():
     return "Welcome to the home page."
 
-## GET Response
+# GET Response
 # @app.route('/employee/', methods=['GET'])
 # def getEmployee():
 #     return jsonify({'Employee_Details': employee})
 
-## GET using specfic emp_Id
+# Dyanmic [GET, POST] Response
+@app.route('/employee/', methods=['GET', 'POST'])
+def addEmployee():
+    if request.method == 'POST' and request.json not in employee:
+        employee.append(request.json)
+        return jsonify({'Employee_Details': employee})
+    elif request.method == 'GET':
+        return jsonify({'Employee_Details': employee})
+    return jsonify({'Employee_Details': 'Employee Already Exists.'})
+
+# GET using specfic emp_Id
 @app.route('/employee/<int:Emp_Id>', methods=['GET'])
 def getSpecificEmployee(Emp_Id):
     for item in range(0, len(employee)-1):
         if str(Emp_Id) == employee[item]['Emp_Id']:
-            return jsonify({ 'Employee_Details': employee[item] })
+            return jsonify({'Employee_Details': employee[item]})
     return jsonify({'Employee_Details': 'Employee Not Found!'})
 
 
@@ -54,7 +64,7 @@ def getSpecificEmployeeWithName(Name):
             return jsonify({'Name': item['Name'], 'Emp_Id': item['Emp_Id'], 'Team': item['Team'], 'Designation': item['Designation'], 'Location': item['Location']})
     return jsonify({'Employee_Details': 'Employee Not Found!'})
 
-## Static Post Response
+# Static Post Response // CREATE
 # @app.route('/employee/', methods=['POST'])
 # def addEmployee():
 #     addedEmp = {'Name': 'Rakesh',
@@ -66,27 +76,18 @@ def getSpecificEmployeeWithName(Name):
 #     employee.append(addedEmp)
 #     return jsonify({'Employee_Details': employee})
 
-## Dyanmic [GET/POST] Response
-@app.route('/employee/', methods=['GET', 'POST'])
-def addEmployee():
-    if request.method == 'POST' and request.json not in employee:
-        employee.append(request.json)
-        return jsonify({'Employee_Details': employee})
-    elif request.method == 'GET':
-        return jsonify({'Employee_Details': employee})
-    else:
-        return jsonify({'Employee_Details': 'Employee Already Exists.'})
-
-## PUT Response //Update
+# PUT Response //Update
 @app.route('/employee/<int:Emp_Id>/<string:name>', methods=['PUT'])
 def updateEmployee(Emp_Id, name):
     for item in employee:
-        if request.method == 'PUT' and str(Emp_Id) == item['Emp_Id']:
-            item['Name'] = name
+        if request.method == 'PUT' and str(Emp_Id) == item['Emp_Id'] and str(name) == item['Name']:
+            item['Designation'] = request.json['Designation']
+            item['Location'] = request.json['Location']
+            item['Team'] = request.json['Team']
             return jsonify({'Employee_Details': employee})
     return jsonify({'Employee_Details': 'Employee Not Found!'})
-        
-## DELETE Employee
+
+# DELETE Employee
 @app.route('/employee/<int:id>', methods=['DELETE'])
 def removeEmp(id):
     for item in range(0, len(employee)-1):
@@ -95,5 +96,13 @@ def removeEmp(id):
             return jsonify({'Employee_Details': employee})
     return jsonify({'Employee_Details': 'Employee Not Found!'})
 
+@app.route('/emp/', methods=['GET'])
+def emp():
+    if 'Emp_Id' in request.args:
+        for emp in range(0, len(employee)-1):
+            if request.args['Emp_Id'] == employee[emp]['Emp_Id']:
+                employee[emp]['Emp_Id'] == request.args['Emp_Id']
+                return jsonify({'Employee_Details': employee[emp]})
+    return jsonify({'Employee_Details': 'Employee Not Found!'})
 if __name__ == '__main__':
     app.run(debug=True)
